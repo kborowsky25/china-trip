@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+
+# Expo / native
+.expo/
+dist/
+web-build/
+/mobile/ios
+/mobile/android
+expo-env.d.ts
+.metro-health-check*
+
+# server
+server/dist/
+*.db
+*.db-wal
+*.db-shm
+
+# env & secrets
+.env
+.env*.local
+
+# misc
+.DS_Store
+*.log
+*.tsbuildinfo
+scripts/_data.mjs

@@ -1,0 +1,35 @@
+# Fly.io config for the China Trip sync backend.
+# Single-instance: all data lives in one SQLite file on the china_trip_data
+# volume, so do NOT scale count > 1 (each machine gets its own volume = split
+# brain). To scale out, migrate to LiteFS or Postgres first.
+app = 'china-trip-sync'
+primary_region = 'lhr'
+
+[build]
+
+[env]
+  HOST = '0.0.0.0'
+  PORT = '4000'
+  CT_DB_PATH = '/data/china-trip.db'
+
+[[mounts]]
+  source = 'china_trip_data'
+  destination = '/data'
+
+[http_service]
+  internal_port = 4000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '10s'
+    method = 'GET'
+    path = '/health'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '512mb'
