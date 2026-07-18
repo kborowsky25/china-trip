@@ -39,6 +39,14 @@ export function Icon({
   size?: number;
   color?: string;
 }) {
+  // crisp stroked cross (the filled glyph looked heavy/distorted at small sizes)
+  if (name === "close") {
+    return (
+      <Svg width={size} height={size} viewBox="0 0 24 24">
+        <Path d="M6 6 L18 18 M18 6 L6 18" stroke={color} strokeWidth={2.4} strokeLinecap="round" fill="none" />
+      </Svg>
+    );
+  }
   const path = ICON_PATHS[name] ?? ICON_PATHS.link;
   const isPlane = name === "plane";
   return (
