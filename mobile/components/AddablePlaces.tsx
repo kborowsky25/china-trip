@@ -119,7 +119,7 @@ function AddedHotel({ p, mapcity, onDelete }: { p: Place; mapcity: string; onDel
           {p.name}
         </Text>
         <View style={styles.tag}>
-          <Text style={styles.tagTxt}>ADDED</Text>
+          <Text style={styles.tagTxt}>BOOKED</Text>
         </View>
         <Pressable onPress={onDelete} hitSlop={8} style={{ padding: 4 }}>
           <Icon name="trash" size={14} color={colors.muted} />
@@ -143,7 +143,7 @@ function AddedHotel({ p, mapcity, onDelete }: { p: Place; mapcity: string; onDel
           <Text style={styles.cbtnTxt}>Maps ↗</Text>
         </Pressable>
       </View>
-      <Text style={styles.by}>added by {p.by}</Text>
+      <Text style={styles.by}>booked · added by {p.by}</Text>
     </View>
   );
 }
@@ -176,20 +176,20 @@ function Mini({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.goldSoft, borderRadius: radius.md, padding: 13, marginBottom: 8 },
+  card: { backgroundColor: "#E7F5EC", borderColor: "#B5DEC2", borderWidth: 1, borderRadius: radius.md, padding: 13, marginBottom: 8 },
   cardHead: { flexDirection: "row", alignItems: "center", gap: 8 },
-  cardName: { flex: 1, fontSize: 14, fontWeight: "800", color: "#7a5a00" },
-  tag: { backgroundColor: colors.gold, borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3 },
+  cardName: { flex: 1, fontSize: 14, fontWeight: "800", color: "#14532d" },
+  tag: { backgroundColor: "#1F7A39", borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3 },
   tagTxt: { color: "#fff", fontSize: 9, fontWeight: "800", letterSpacing: 0.6 },
-  cardAddr: { fontSize: 11, color: "#8a6a1a", marginTop: 6, lineHeight: 16 },
+  cardAddr: { fontSize: 11, color: "#4b6b56", marginTop: 6, lineHeight: 16 },
   grid: { flexDirection: "row", gap: 6, marginTop: 10 },
-  mini: { flex: 1, backgroundColor: "#fff", borderColor: "#ecd9a3", borderWidth: 1, borderRadius: 9, padding: 7 },
-  miniLabel: { fontSize: 8.5, fontWeight: "800", letterSpacing: 0.6, color: "#a5842e" },
-  miniValue: { fontSize: 10.5, fontWeight: "800", marginTop: 2, color: "#7a5a00" },
+  mini: { flex: 1, backgroundColor: "#fff", borderColor: "#d5e9db", borderWidth: 1, borderRadius: 9, padding: 7 },
+  miniLabel: { fontSize: 8.5, fontWeight: "800", letterSpacing: 0.6, color: "#6b8a76" },
+  miniValue: { fontSize: 10.5, fontWeight: "800", marginTop: 2, color: "#14532d" },
   cardBtns: { flexDirection: "row", gap: 6, marginTop: 10 },
   cbtn: { flex: 1, borderRadius: 9, paddingVertical: 9, alignItems: "center" },
   cbtnTxt: { color: "#fff", fontSize: 11.5, fontWeight: "800" },
-  by: { fontSize: 10.5, color: "#a5842e", marginTop: 8, fontWeight: "600" },
+  by: { fontSize: 10.5, color: "#4b6b56", marginTop: 8, fontWeight: "600" },
 
   spot: {
     flexDirection: "row",

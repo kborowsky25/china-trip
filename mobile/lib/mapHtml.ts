@@ -83,10 +83,8 @@ var map=null, markers={}, playing=false, playTimer=null;
 
 function initMap(){
   if(typeof L==='undefined')throw new Error('Leaflet not loaded');
-  var base=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png',{attribution:'',subdomains:'abcd',maxZoom:20,updateWhenZooming:false,keepBuffer:6});
+  var base=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png',{attribution:'',subdomains:'abcd',maxZoom:20,keepBuffer:4});
   map=L.map('map',{scrollWheelZoom:true,worldCopyJump:true,layers:[base],zoomSnap:0,zoomDelta:0.5,wheelPxPerZoomLevel:80,wheelDebounceTime:25,zoomControl:false,attributionControl:false}).setView([31,110],4.4);
-  map.on('zoomstart',function(){window.__zooming=true;});
-  map.on('zoomend',function(){window.__zooming=false;});
 
   var pin=function(cls){return L.divIcon({className:'',html:'<div class="pin '+(cls||'')+'"></div>',iconSize:[14,14],iconAnchor:[7,7],popupAnchor:[0,-8]});};
   stops.forEach(function(s){
@@ -117,7 +115,7 @@ function initMap(){
     var marker=L.marker(path[0],{icon:moverIcon,interactive:false,zIndexOffset:1000}).addTo(map);
     var cum=[0];for(var i=1;i<path.length;i++)cum.push(cum[i-1]+segLen(path[i-1],path[i]));
     var total=cum[cum.length-1]||1,duration=(kind==='train'?9000:kind==='boat'?6000:11000),start=null;
-    function frame(ts){if(start===null)start=ts;var d=(((ts-start)%duration)/duration)*total;var i=1;while(i<cum.length&&cum[i]<d)i++;if(i>=path.length)i=path.length-1;var seg=(d-cum[i-1])/((cum[i]-cum[i-1])||1);var lat=path[i-1][0]+(path[i][0]-path[i-1][0])*seg,lng=path[i-1][1]+(path[i][1]-path[i-1][1])*seg;if(!window.__zooming)marker.setLatLng([lat,lng]);
+    function frame(ts){if(start===null)start=ts;var d=(((ts-start)%duration)/duration)*total;var i=1;while(i<cum.length&&cum[i]<d)i++;if(i>=path.length)i=path.length-1;var seg=(d-cum[i-1])/((cum[i]-cum[i-1])||1);var lat=path[i-1][0]+(path[i][0]-path[i-1][0])*seg,lng=path[i-1][1]+(path[i][1]-path[i-1][1])*seg;marker.setLatLng([lat,lng]);
       if(kind==='plane'){var dLat=path[i][0]-path[i-1][0],dLng=path[i][1]-path[i-1][1];var ang=Math.atan2(-dLat,dLng)*180/Math.PI;var el=marker.getElement();if(el){var g=el.querySelector('.plane');if(g)g.style.transform='rotate('+ang+'deg)';}}
       else{var el2=marker.getElement();if(el2){var g2=el2.querySelector('.mvricon');if(g2)g2.style.transform=(path[i][1]<path[i-1][1])?'scaleX(-1)':'';}}
       requestAnimationFrame(frame);}
@@ -134,29 +132,16 @@ function initMap(){
 }
 
 function setPlay(on){playing=on;post({type:'play',on:on});}
-function buildSeq(){
-  var seq=[{from:'London',to:stops[0].name,mode:'✈ Flight',at:stops[0].c,z:6.2,m:stops[0].n}];
-  for(var i=1;i<stops.length;i++){var s=stops[i];seq.push({from:stops[i-1].name,to:s.name,mode:(s.cls==='rail'?'🚄 High-speed rail':'✈ Flight'),at:s.c,z:6.2,m:s.n});}
-  seq.push({from:'Hong Kong',to:'Macau',mode:'⛴ Ferry day trip',at:C.Macau,z:8});
-  seq.push({from:'Hong Kong',to:'London',mode:'✈ Flight home',at:C.London,z:4});
-  return seq;
-}
 window.__play=function(){
   if(!map)return;
-  if(playing){clearTimeout(playTimer);setPlay(false);post({type:'leg',done:true});window.__fit();return;}
-  setPlay(true);
-  var seq=buildSeq(),i=0;
+  if(playing){clearTimeout(playTimer);setPlay(false);map.closePopup();window.__fit();return;}
+  setPlay(true);var i=0;
   function step(){
     if(!playing)return;
-    if(i>=seq.length){setPlay(false);post({type:'leg',done:true});map.flyToBounds(stops.map(function(s){return s.c;}).concat([C.Macau]),{padding:[60,60],duration:1.4});return;}
-    var s=seq[i];
-    post({type:'leg',i:i+1,total:seq.length,from:s.from,to:s.to,mode:s.mode});
-    map.flyTo(s.at,s.z,{duration:1.3});
-    if(s.m&&markers[s.m])markers[s.m].openPopup();
-    i++;playTimer=setTimeout(step,2300);
+    if(i>=stops.length){setPlay(false);map.flyToBounds(stops.map(function(s){return s.c;}).concat([C.Macau]),{padding:[60,60],duration:1.4});return;}
+    var s=stops[i];map.flyTo(s.c,6.2,{duration:1.3});if(markers[s.n])markers[s.n].openPopup();i++;playTimer=setTimeout(step,2300);
   }
-  map.flyTo(C.Beijing,5,{duration:1});
-  playTimer=setTimeout(step,900);
+  map.flyTo(C.Beijing,5,{duration:1});playTimer=setTimeout(step,900);
 };
 
 try{ initMap(); }catch(err){ var e=document.getElementById('maperr'); if(e)e.style.display='flex'; }

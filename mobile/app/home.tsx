@@ -3,8 +3,7 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, { FadeIn } from "react-native-reanimated";
-import { TripMap, TripMapHandle, Leg } from "../components/TripMap";
+import { TripMap, TripMapHandle } from "../components/TripMap";
 import { FloatingNav, SheetKey } from "../components/FloatingNav";
 import { Sheet } from "../components/Sheet";
 import { Avatar } from "../components/Avatar";
@@ -32,7 +31,6 @@ export default function Home() {
   const [active, setActive] = useState<SheetKey | null>(null);
   const [last, setLast] = useState<SheetKey>("itinerary");
   const [playing, setPlaying] = useState(false);
-  const [leg, setLeg] = useState<Leg | null>(null);
 
   function select(k: SheetKey) {
     setActive((prev) => {
@@ -59,15 +57,7 @@ export default function Home() {
     <View style={{ flex: 1, backgroundColor: colors.washTop }}>
       <StatusBar style="dark" />
 
-      <TripMap
-        ref={mapRef}
-        onSelectStop={(n) => router.push(`/stop/${n}`)}
-        onPlayState={(on) => {
-          setPlaying(on);
-          if (!on) setLeg(null);
-        }}
-        onLeg={setLeg}
-      />
+      <TripMap ref={mapRef} onSelectStop={(n) => router.push(`/stop/${n}`)} onPlayState={setPlaying} />
 
       {/* floating top row: identity + locate */}
       <View style={[styles.top, { top: insets.top + 8 }]} pointerEvents="box-none">
@@ -91,23 +81,6 @@ export default function Home() {
           <Icon name="loc" size={20} color={colors.ink} />
         </Pressable>
       </View>
-
-      {/* play caption — shows each leg as the camera flies it */}
-      {playing && leg ? (
-        <Animated.View
-          entering={FadeIn.duration(200)}
-          style={[styles.legBanner, { top: insets.top + 56 }]}
-          pointerEvents="none"
-        >
-          <Text style={styles.legMode}>{leg.mode}</Text>
-          <Text style={styles.legRoute}>
-            {leg.from} → {leg.to}
-          </Text>
-          <Text style={styles.legProg}>
-            {leg.i} of {leg.total}
-          </Text>
-        </Animated.View>
-      ) : null}
 
       {/* floating nav */}
       <FloatingNav
@@ -156,18 +129,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     ...shadow.soft,
   },
-  legBanner: {
-    position: "absolute",
-    alignSelf: "center",
-    backgroundColor: colors.ink,
-    borderRadius: 16,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    alignItems: "center",
-    ...shadow.card,
-  },
-  legMode: { color: colors.gold, fontSize: 11, fontWeight: "800", letterSpacing: 0.4 },
-  legRoute: { color: "#fff", fontSize: 15, fontWeight: "800", marginTop: 2, letterSpacing: -0.2 },
-  legProg: { color: "rgba(255,255,255,0.55)", fontSize: 10, fontWeight: "700", marginTop: 2, letterSpacing: 1 },
 });
 
