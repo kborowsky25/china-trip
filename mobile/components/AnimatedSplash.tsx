@@ -1,9 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { Image } from "expo-image";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
-import { Panda } from "./Panda";
 import { SplitFlap } from "./SplitFlap";
 import { colors } from "../lib/theme";
+
+const PANDA = require("../assets/splash.png");
 
 // Launch entry: an airport split-flap board flips to spell the destination,
 // under the panda mark. Clean and light.
@@ -11,7 +13,7 @@ export function AnimatedSplash() {
   return (
     <View style={styles.fill}>
       <Animated.View entering={FadeIn.duration(400)} style={{ alignItems: "center" }}>
-        <Panda size={64} />
+        <Image source={PANDA} style={styles.panda} contentFit="contain" />
         <Text style={styles.kicker}>XENIA IN</Text>
       </Animated.View>
 
@@ -33,6 +35,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  kicker: { marginTop: 18, fontSize: 12, fontWeight: "800", letterSpacing: 4, color: colors.muted },
+  panda: { width: 84, height: 84 },
+  kicker: { marginTop: 14, fontSize: 12, fontWeight: "800", letterSpacing: 4, color: colors.muted },
   caption: { marginTop: 24, fontSize: 11, fontWeight: "700", letterSpacing: 3, color: colors.faint },
 });
