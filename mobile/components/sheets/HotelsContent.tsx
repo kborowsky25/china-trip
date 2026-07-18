@@ -33,7 +33,7 @@ export function HotelsContent() {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingTop: 4, paddingBottom: 130 },
+  content: { paddingTop: 4, paddingBottom: 28 },
   block: { marginBottom: 22 },
   cityRow: {
     flexDirection: "row",

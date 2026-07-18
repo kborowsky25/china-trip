@@ -53,5 +53,5 @@ const styles = StyleSheet.create({
   segBtnOn: { backgroundColor: colors.ink },
   segTxt: { fontSize: 13, fontWeight: "800", color: colors.muted },
   segTxtOn: { color: "#fff" },
-  content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 130 },
+  content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 28 },
 });

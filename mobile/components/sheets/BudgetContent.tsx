@@ -90,7 +90,7 @@ function Fx({ label, symbol, value }: { label: string; symbol: string; value: nu
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 130 },
+  content: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 28 },
   kicker: { fontSize: 10, fontWeight: "800", letterSpacing: 2, color: colors.muted },
   total: { fontSize: 52, fontWeight: "800", letterSpacing: -2, color: colors.ink, marginTop: 6 },
   caption: { fontSize: 12.5, color: colors.muted, marginTop: 2, fontWeight: "600" },

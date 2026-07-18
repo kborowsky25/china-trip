@@ -101,7 +101,7 @@ function Terminal({ label, sub, first, last }: { label: string; sub: string; fir
 const RAIL = 46;
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 130 },
+  content: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 28 },
   caption: { fontSize: 12.5, color: colors.muted, marginBottom: 10, fontWeight: "600" },
   row: { flexDirection: "row", minHeight: 62 },
   travelRow: { flexDirection: "row", minHeight: 34 },

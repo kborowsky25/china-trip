@@ -18,6 +18,11 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import Animated, {
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
 import { WikiImage } from "../../components/WikiImage";
 import { Icon } from "../../components/Icons";
 import { DecodeText } from "../../components/DecodeText";
@@ -25,6 +30,7 @@ import { AddablePlaces } from "../../components/AddablePlaces";
 import { BookedStay, StaySearch } from "../../components/HotelCards";
 import { STOPS, mapsQ, wcode, hotelLink } from "../../lib/data";
 import { heroImageFor } from "../../lib/heroImages";
+import { spotImageFor } from "../../lib/spotImages";
 import { hotelTier } from "../../lib/theme";
 import { useProfile } from "../../lib/profile";
 import { fetchWx, CurrentWx } from "../../lib/services";
@@ -40,6 +46,8 @@ import {
 import { colors, radius } from "../../lib/theme";
 
 type Tab = "ov" | "wx" | "nt" | "rl";
+
+const HERO_H = 264;
 
 export default function StopDetail() {
   const { n } = useLocalSearchParams<{ n: string }>();
@@ -59,69 +67,90 @@ export default function StopDetail() {
     );
   }
 
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    scrollY.value = e.contentOffset.y;
+  });
+  const heroStyle = useAnimatedStyle(() => {
+    const y = scrollY.value;
+    return {
+      transform: [
+        { translateY: y > 0 ? y * 0.3 : 0 },
+        { scale: y < 0 ? 1 - (2 * y) / HERO_H : 1 },
+      ],
+    };
+  });
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.washTop }}>
       <StatusBar style="light" />
+
+      {/* fixed hero — zooms in when you pull the sheet down */}
+      <Animated.View style={[styles.hero, heroStyle]}>
+        <WikiImage
+          title={stop.hero}
+          city={stop.mapcity}
+          lock={stop.n * 100}
+          uri={heroImageFor(stop.mapcity)}
+          style={StyleSheet.absoluteFillObject as any}
+        />
+        <LinearGradient
+          colors={["rgba(8,16,32,0.05)", "rgba(8,16,32,0.82)"]}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <View style={styles.heroText}>
+          <DecodeText text={stop.name} style={styles.heroTitle} />
+          <Text style={styles.heroSub}>
+            {stop.dates} · {stop.days} days
+          </Text>
+        </View>
+      </Animated.View>
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <ScrollView
+        <Animated.ScrollView
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Hero */}
-          <View style={styles.hero}>
-            <WikiImage
-              title={stop.hero}
-              city={stop.mapcity}
-              lock={stop.n * 100}
-              uri={heroImageFor(stop.mapcity)}
-              style={StyleSheet.absoluteFillObject as any}
-            />
-            <LinearGradient
-              colors={["rgba(8,16,32,0.05)", "rgba(8,16,32,0.82)"]}
-              style={StyleSheet.absoluteFillObject}
-            />
-            <Pressable
-              onPress={() => router.back()}
-              style={[styles.close, { top: insets.top + 8 }]}
-              hitSlop={8}
-            >
-              <Icon name="close" size={16} color="#fff" />
-            </Pressable>
-            <View style={styles.heroText}>
-              <DecodeText text={stop.name} style={styles.heroTitle} />
-              <Text style={styles.heroSub}>
-                {stop.dates} · {stop.days} days
-              </Text>
+          <View style={{ height: HERO_H }} />
+          <View style={styles.sheet}>
+            <View style={styles.tabs}>
+              {(
+                [
+                  ["ov", "Overview"],
+                  ["wx", "Weather"],
+                  ["nt", "Notes"],
+                  ["rl", "Reels"],
+                ] as [Tab, string][]
+              ).map(([key, label]) => (
+                <Pressable key={key} style={styles.tab} onPress={() => setTab(key)}>
+                  <Text style={[styles.tabTxt, tab === key && styles.tabTxtOn]}>{label}</Text>
+                  {tab === key ? <View style={styles.tabUnderline} /> : null}
+                </Pressable>
+              ))}
             </View>
-          </View>
 
-          {/* Tabs */}
-          <View style={styles.tabs}>
-            {(
-              [
-                ["ov", "Overview"],
-                ["wx", "Weather"],
-                ["nt", "Notes"],
-                ["rl", "Reels"],
-              ] as [Tab, string][]
-            ).map(([key, label]) => (
-              <Pressable key={key} style={styles.tab} onPress={() => setTab(key)}>
-                <Text style={[styles.tabTxt, tab === key && styles.tabTxtOn]}>{label}</Text>
-                {tab === key ? <View style={styles.tabUnderline} /> : null}
-              </Pressable>
-            ))}
+            {tab === "ov" && <Overview stop={stop} />}
+            {tab === "wx" && <Weather stop={stop} />}
+            {tab === "nt" && <Notes stopN={stop.n} stopName={stop.name} />}
+            {tab === "rl" && <Reels stopN={stop.n} />}
           </View>
-
-          {tab === "ov" && <Overview stop={stop} />}
-          {tab === "wx" && <Weather stop={stop} />}
-          {tab === "nt" && <Notes stopN={stop.n} stopName={stop.name} />}
-          {tab === "rl" && <Reels stopN={stop.n} />}
-        </ScrollView>
+        </Animated.ScrollView>
       </KeyboardAvoidingView>
+
+      {/* fixed close button */}
+      <Pressable
+        onPress={() => router.back()}
+        style={[styles.close, { top: insets.top + 10 }]}
+        hitSlop={10}
+      >
+        <Icon name="close" size={15} color="#fff" />
+      </Pressable>
     </View>
   );
 }
@@ -216,6 +245,7 @@ function Overview({ stop }: { stop: (typeof STOPS)[number] }) {
               title={a.title}
               city={stop.mapcity}
               lock={stop.n * 100 + i + 1}
+              uri={spotImageFor(a.title)}
               w={180}
               h={180}
               style={styles.dThumb as any}
@@ -480,18 +510,35 @@ function timeAgo(ts: number): string {
 
 const styles = StyleSheet.create({
   missing: { flex: 1, alignItems: "center", justifyContent: "center" },
-  hero: { height: 220, backgroundColor: "#cfd8e6", justifyContent: "flex-end" },
+  hero: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: HERO_H,
+    backgroundColor: "#cfd8e6",
+    justifyContent: "flex-end",
+    paddingBottom: 30,
+  },
+  sheet: {
+    backgroundColor: colors.paper,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    marginTop: -24,
+    overflow: "hidden",
+  },
   close: {
     position: "absolute",
-    right: 12,
+    right: 14,
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "rgba(10,18,32,0.5)",
+    backgroundColor: "rgba(15,18,26,0.45)",
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 10,
   },
-  heroText: { padding: 16 },
+  heroText: { paddingHorizontal: 18 },
   heroTitle: {
     color: "#fff",
     fontSize: 26,
