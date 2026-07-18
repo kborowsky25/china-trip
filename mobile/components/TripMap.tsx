@@ -10,6 +10,7 @@ import { View, Text, StyleSheet } from "react-native";
 import MapView, {
   Marker,
   MarkerAnimated,
+  Callout,
   Polyline,
   AnimatedRegion,
   PROVIDER_DEFAULT,
@@ -36,6 +37,7 @@ export const TripMap = forwardRef<
   { onSelectStop: (n: number) => void; onPlayState?: (on: boolean) => void }
 >(({ onSelectStop, onPlayState }, ref) => {
   const mapRef = useRef<MapView>(null);
+  const markerRefs = useRef<Record<number, any>>({});
   const routes = useMemo(() => buildRoutes(), []);
   const playing = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -74,10 +76,12 @@ export const TripMap = forwardRef<
           return;
         }
         const s = STOPS[i];
+        if (i > 0) markerRefs.current[STOPS[i - 1].n]?.hideCallout?.();
         mapRef.current?.animateToRegion(
           { latitude: s.c[0], longitude: s.c[1], latitudeDelta: 2.6, longitudeDelta: 2.6 },
           1300
         );
+        setTimeout(() => markerRefs.current[s.n]?.showCallout?.(), 700);
         i += 1;
         timer.current = setTimeout(step, 2300);
       };
@@ -135,15 +139,29 @@ export const TripMap = forwardRef<
       {STOPS.map((s) => (
         <Marker
           key={s.n}
+          ref={(r) => {
+            markerRefs.current[s.n] = r;
+          }}
           coordinate={{ latitude: s.c[0], longitude: s.c[1] }}
-          anchor={{ x: 0.12, y: 0.5 }}
-          onPress={() => onSelectStop(s.n)}
+          anchor={{ x: 6.5 / 140, y: 0.5 }}
+          calloutAnchor={{ x: 6.5 / 140, y: 0.1 }}
           tracksViewChanges={false}
         >
           <View style={styles.pinRow}>
             <View style={styles.dot} />
             <Text style={styles.label}>{s.name}</Text>
           </View>
+          <Callout tooltip={false} onPress={() => onSelectStop(s.n)}>
+            <View style={styles.callout}>
+              <Text style={styles.calloutTitle}>
+                {s.n}. {s.name}
+              </Text>
+              <Text style={styles.calloutSub}>
+                {s.dates} · {s.days} days
+              </Text>
+              <Text style={styles.calloutGo}>Open ›</Text>
+            </View>
+          </Callout>
         </Marker>
       ))}
 
@@ -164,7 +182,7 @@ function Terminal({ coord, label, gold }: { coord: LatLng; label: string; gold?:
   return (
     <Marker
       coordinate={{ latitude: coord[0], longitude: coord[1] }}
-      anchor={{ x: 0.12, y: 0.5 }}
+      anchor={{ x: 4.5 / 140, y: 0.5 }}
       tracksViewChanges={false}
     >
       <View style={styles.pinRow}>
@@ -233,8 +251,13 @@ function Mover({ coords, kind }: { coords: LL[]; kind: Route["kind"] }) {
 }
 
 const styles = StyleSheet.create({
-  pinRow: { flexDirection: "row", alignItems: "center" },
+  // fixed width so the anchor maps precisely to the dot's centre (dots sit exactly on the lines)
+  pinRow: { width: 140, height: 22, flexDirection: "row", alignItems: "center" },
   dot: { width: 13, height: 13, borderRadius: 7, backgroundColor: colors.red, borderWidth: 2.5, borderColor: "#fff" },
+  callout: { width: 168, paddingVertical: 2, paddingHorizontal: 2 },
+  calloutTitle: { fontSize: 14, fontWeight: "800", color: colors.ink },
+  calloutSub: { fontSize: 11.5, color: colors.muted, marginTop: 2 },
+  calloutGo: { fontSize: 11.5, fontWeight: "800", color: colors.red, marginTop: 5 },
   dotTerm: { width: 9, height: 9, borderRadius: 5, backgroundColor: colors.faint, borderWidth: 2, borderColor: "#fff" },
   label: {
     marginLeft: 4,

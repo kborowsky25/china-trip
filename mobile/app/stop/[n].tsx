@@ -73,12 +73,8 @@ export default function StopDetail() {
   });
   const heroStyle = useAnimatedStyle(() => {
     const y = scrollY.value;
-    return {
-      transform: [
-        { translateY: y > 0 ? y * 0.3 : 0 },
-        { scale: y < 0 ? 1 - (2 * y) / HERO_H : 1 },
-      ],
-    };
+    // only zoom in on pull-down; stay put (no move, no zoom-out) on scroll-up
+    return { transform: [{ scale: y < 0 ? 1 - (2 * y) / HERO_H : 1 }] };
   });
 
   return (
